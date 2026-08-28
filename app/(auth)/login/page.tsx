@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth, dashboardPathForRole } from '@/lib/auth-context';
-import { Button, ErrorBanner, Input, Label } from '@/components/ui';
+import { Button, ErrorBanner, Input, Label, Loading } from '@/components/ui';
 
-export default function LoginPage() {
+function LoginForm() {
   const { login } = useAuth();
   const router = useRouter();
   const params = useSearchParams();
@@ -57,5 +57,13 @@ export default function LoginPage() {
         </Link>
       </p>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <LoginForm />
+    </Suspense>
   );
 }
