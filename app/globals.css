@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #ECEAE1;
+  color: #14231D;
+}
+
+::selection {
+  background-color: #C79A2E;
+  color: #14231D;
+}
+
+:focus-visible {
+  outline: 2px solid #C79A2E;
+  outline-offset: 2px;
+}
+
+/* ---- Signature element: the completion stamp ---- */
+.stamp {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 9999px;
+  border: 2.5px solid currentColor;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  transform: rotate(-8deg);
+  letter-spacing: 0.02em;
+}
+
+.stamp::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: 9999px;
+  border: 1px dashed currentColor;
+  opacity: 0.55;
+}
+
+.stamp-sm {
+  width: 44px;
+  height: 44px;
+  border-width: 2px;
+}
+
+/* ---- Ledger table (admin stats / dashboards) ---- */
+.ledger {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ledger th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #4B5A54;
+  padding: 10px 14px;
+  border-bottom: 1px solid #CFCBBB;
+}
+
+.ledger td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #E2DFD3;
+  font-size: 0.95rem;
+}
+
+.ledger tr:hover td {
+  background-color: rgba(199, 154, 46, 0.06);
+}
+
+/* ---- Index-card look for browse grids ---- */
+.index-card {
+  background: #F5F3EC;
+  border: 1px solid #CFCBBB;
+  border-top: 3px solid #1F3B32;
+  border-radius: 6px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.index-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -12px rgba(20, 35, 29, 0.35);
+}
+
+.progress-track {
+  background-color: #E2DFD3;
+  border-radius: 9999px;
+  overflow: hidden;
+  height: 8px;
+}
+
+.progress-fill {
+  background-color: #1F3B32;
+  height: 100%;
+  transition: width 0.4s ease;
+}
