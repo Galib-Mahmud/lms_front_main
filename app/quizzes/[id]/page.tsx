@@ -53,7 +53,12 @@ function QuizInner() {
     setError('');
     try {
       const res = await api.post(`/api/quizzes/${id}/submit`, { answers: ordered });
-      setResult(res.data);
+      const payload = res.data || res;
+      setResult({
+        score: payload.score ?? 0,
+        totalQuestions: payload.totalQuestions ?? 0,
+        percentage: payload.percentage ?? 0,
+      });
     } catch (err: any) {
       setError(err.message);
     } finally {
