@@ -30,23 +30,21 @@ export default function CourseDetailPage() {
       const courseNumericId = courseRes.data.id;
 
       if (user?.role.type === 'student') {
-        const enrollments = await api.get(`/api/enrollments?populate=course`);
-        const enrolled = (enrollments.data || []).some(
-          (e: any) => (e.course?.id ?? e.course) === courseNumericId
-        );
-        setIsEnrolled(enrolled);
+        try {
+          const progressRes = await api.get(`/api/courses/${id}/progress`);
+          setIsEnrolled(true);
+          setProgress(progressRes.data);
 
-        if (enrolled) {
-          const [lessonsRes, quizzesRes, progressRes] = await Promise.all([
+          const [lessonsRes, quizzesRes] = await Promise.all([
             api.get(`/api/lessons?filters[course][id]=${courseNumericId}&sort=order:asc`),
             api.get(`/api/quizzes?filters[course][id]=${courseNumericId}`),
-            api.get(`/api/courses/${id}/progress`),
           ]);
           setLessons(lessonsRes.data || []);
           setQuizzes(quizzesRes.data || []);
-          setProgress(progressRes.data);
+        } catch {
+          setIsEnrolled(false);
         }
-      } else if (isPrivileged) {
+      } else if (isPrivileged || !user) {
         const [lessonsRes, quizzesRes] = await Promise.all([
           api.get(`/api/lessons?filters[course][id]=${courseNumericId}&sort=order:asc`),
           api.get(`/api/quizzes?filters[course][id]=${courseNumericId}`),
@@ -83,7 +81,7 @@ export default function CourseDetailPage() {
   if (loading) return <Loading />;
   if (!course) return <EmptyState title="Course not found" body="The requested course could not be located." />;
 
-  const canSeeContent = isEnrolled || isPrivileged;
+  const canSeeContent = isEnrolled || isPrivileged || !user;
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-12">
