@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1337';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://lmsbackmain-production.up.railway.app';
 
 export class ApiError extends Error {
   status: number;
