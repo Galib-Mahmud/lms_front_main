@@ -20,8 +20,23 @@ function QuizInner() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await api.get(`/api/quizzes/${id}`);
+        const [res, resultsRes] = await Promise.all([
+          api.get(`/api/quizzes/${id}`),
+          api.get('/api/quiz-results').catch(() => ({ data: [] })),
+        ]);
         setQuiz(res.data);
+        if (resultsRes?.data && Array.isArray(resultsRes.data)) {
+          const matched = resultsRes.data.find(
+            (r: any) => (r.quiz?.documentId === id || r.quiz?.id === res.data?.id || r.quiz === res.data?.id)
+          );
+          if (matched) {
+            setResult({
+              score: matched.score,
+              totalQuestions: matched.totalQuestions,
+              percentage: matched.totalQuestions === 0 ? 0 : Math.round((matched.score / matched.totalQuestions) * 100),
+            });
+          }
+        }
       } catch (err: any) {
         setError(err.message);
       } finally {

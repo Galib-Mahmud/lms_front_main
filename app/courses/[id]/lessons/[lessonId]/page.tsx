@@ -31,7 +31,7 @@ export default function LessonPage() {
         const [siblingsRes, progressRes] = await Promise.all([
           api.get(`/api/lessons?filters[course][id]=${courseNumericId}&sort=order:asc`),
           user?.role.type === 'student'
-            ? api.get(`/api/lesson-progresses?filters[lesson][id]=${lessonData.id}`)
+            ? api.get(`/api/lesson-progresses?filters[lesson][id]=${lessonData.id}&filters[user][id]=${user.id}`)
             : Promise.resolve({ data: [] }),
         ]);
         setAllLessons(siblingsRes.data || []);
