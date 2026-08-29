@@ -1,13 +1,4 @@
-function resolveApiUrl(): string {
-  const envUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
-  let base = envUrl && envUrl.length > 0 ? envUrl : 'https://lmsbackmain-production.up.railway.app';
-  if (!base.startsWith('http://') && !base.startsWith('https://')) {
-    base = `https://${base}`;
-  }
-  return base.replace(/\/+$/, '');
-}
-
-const API_URL = resolveApiUrl();
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://lmsbackmain-production.up.railway.app';
 
 export class ApiError extends Error {
   status: number;
