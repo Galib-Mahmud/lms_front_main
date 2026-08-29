@@ -24,33 +24,39 @@ export default function CourseDetailPage() {
 
   const load = async () => {
     try {
+      setError('');
       const courseRes = await api.get(`/api/courses/${id}?populate=owner`);
       setCourse(courseRes.data);
 
       const courseNumericId = courseRes.data.id;
+      let studentEnrolled = false;
 
       if (user?.role.type === 'student') {
         try {
           const progressRes = await api.get(`/api/courses/${id}/progress`);
+          studentEnrolled = true;
           setIsEnrolled(true);
           setProgress(progressRes.data);
+        } catch {
+          studentEnrolled = false;
+          setIsEnrolled(false);
+          setProgress(null);
+        }
+      }
 
+      const canView = studentEnrolled || isPrivileged || !user;
+
+      if (canView) {
+        try {
           const [lessonsRes, quizzesRes] = await Promise.all([
             api.get(`/api/lessons?filters[course][id]=${courseNumericId}&sort=order:asc`),
             api.get(`/api/quizzes?filters[course][id]=${courseNumericId}`),
           ]);
           setLessons(lessonsRes.data || []);
           setQuizzes(quizzesRes.data || []);
-        } catch {
-          setIsEnrolled(false);
+        } catch (err: any) {
+          console.error('Failed to load course lessons/quizzes:', err);
         }
-      } else if (isPrivileged || !user) {
-        const [lessonsRes, quizzesRes] = await Promise.all([
-          api.get(`/api/lessons?filters[course][id]=${courseNumericId}&sort=order:asc`),
-          api.get(`/api/quizzes?filters[course][id]=${courseNumericId}`),
-        ]);
-        setLessons(lessonsRes.data || []);
-        setQuizzes(quizzesRes.data || []);
       }
     } catch (err: any) {
       setError(err.message);
@@ -72,7 +78,12 @@ export default function CourseDetailPage() {
       setIsEnrolled(true);
       await load();
     } catch (err: any) {
-      setError(err.message);
+      if (err.message && err.message.toLowerCase().includes('already enrolled')) {
+        setIsEnrolled(true);
+        await load();
+      } else {
+        setError(err.message);
+      }
     } finally {
       setEnrolling(false);
     }

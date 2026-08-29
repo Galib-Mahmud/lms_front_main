@@ -76,7 +76,12 @@ export default function CoursesPage() {
       setEnrolledIds((ids) => [...ids, course.id]);
       setEnrolledDocIds((docIds) => [...docIds, course.documentId]);
     } catch (err: any) {
-      setError(err.message);
+      if (err.message && err.message.toLowerCase().includes('already enrolled')) {
+        setEnrolledIds((ids) => [...ids, course.id]);
+        setEnrolledDocIds((docIds) => [...docIds, course.documentId]);
+      } else {
+        setError(err.message);
+      }
     } finally {
       setEnrollingId(null);
     }
