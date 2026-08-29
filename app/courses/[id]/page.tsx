@@ -20,7 +20,8 @@ export default function CourseDetailPage() {
   const [error, setError] = useState('');
   const [enrolling, setEnrolling] = useState(false);
 
-  const isPrivileged = user && ['admin', 'content_manager', 'instructor'].includes(user.role.type);
+  const roleType = user?.role?.type || (typeof user?.role === 'string' ? user.role : 'student');
+  const isPrivileged = !!user && ['admin', 'content_manager', 'instructor'].includes(roleType);
 
   const load = async () => {
     try {
@@ -31,7 +32,7 @@ export default function CourseDetailPage() {
       const courseNumericId = courseRes.data.id;
       let studentEnrolled = false;
 
-      if (user?.role.type === 'student') {
+      if (user && !isPrivileged) {
         try {
           const progressRes = await api.get(`/api/courses/${id}/progress`);
           studentEnrolled = true;
@@ -124,7 +125,7 @@ export default function CourseDetailPage() {
       <ErrorBanner message={error} />
 
       {/* Student Un-Enrolled Callout */}
-      {user?.role.type === 'student' && !isEnrolled && (
+      {user && !isPrivileged && !isEnrolled && (
         <div className="glass-card p-8 mb-10 border border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-6 bg-gradient-to-r from-emerald-950/40 to-transparent">
           <div>
             <h3 className="font-display text-2xl font-bold text-white mb-1">Unlock Full Curriculum</h3>
@@ -137,7 +138,7 @@ export default function CourseDetailPage() {
       )}
 
       {/* Student Progress Banner */}
-      {user?.role.type === 'student' && isEnrolled && progress && (
+      {user && !isPrivileged && isEnrolled && progress && (
         <div className="glass-card p-6 mb-10 border border-amber-500/30 flex items-center gap-6 bg-amber-500/5">
           <Stamp value={`${progress.percentage}%`} label="completed" color="gold" />
           <div className="flex-1">
