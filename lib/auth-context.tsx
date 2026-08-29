@@ -24,16 +24,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchCurrentUser = async (): Promise<CurrentUser> => {
+    try {
+      const customMe = await api.get('/api/custom-auth/me').catch(() => null);
+      if (customMe && customMe.role?.type) {
+        return customMe;
+      }
+    } catch {
+      // Fallback if custom-auth/me is building
+    }
+
+    const rawMe = await api.get('/api/users/me?populate=role');
+    const roleType: Role = (rawMe.role?.type as Role) || 'student';
+    return {
+      id: rawMe.id,
+      username: rawMe.username,
+      email: rawMe.email,
+      fullName: rawMe.fullName,
+      role: { type: roleType, name: ROLE_LABELS[roleType] || 'Student' },
+    };
+  };
+
   const refresh = useCallback(async () => {
     try {
-      const me = await api.get('/api/custom-auth/me');
-      setUser({
-        id: me.id,
-        username: me.username,
-        email: me.email,
-        fullName: me.fullName,
-        role: { type: me.role?.type || 'student', name: me.role?.name || 'Student' },
-      });
+      const me = await fetchCurrentUser();
+      setUser(me);
     } catch {
       setUser(null);
     } finally {
@@ -53,14 +68,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (identifier: string, password: string) => {
     const res = await api.post('/api/auth/local', { identifier, password });
     setToken(res.jwt);
-    const me = await api.get('/api/custom-auth/me');
-    const current: CurrentUser = {
-      id: me.id,
-      username: me.username,
-      email: me.email,
-      fullName: me.fullName,
-      role: { type: me.role?.type || 'student', name: me.role?.name || 'Student' },
-    };
+
+    let current: CurrentUser;
+    if (res.user && res.user.role?.type) {
+      current = {
+        id: res.user.id,
+        username: res.user.username,
+        email: res.user.email,
+        fullName: res.user.fullName,
+        role: { type: res.user.role.type as Role, name: res.user.role.name || 'Student' },
+      };
+    } else {
+      current = await fetchCurrentUser();
+    }
+
     setUser(current);
     return current;
   }, []);
