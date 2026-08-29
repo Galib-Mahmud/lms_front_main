@@ -26,13 +26,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async () => {
     try {
-      const me = await api.get('/api/users/me?populate=role');
+      const me = await api.get('/api/custom-auth/me');
       setUser({
         id: me.id,
         username: me.username,
         email: me.email,
         fullName: me.fullName,
-        role: { type: me.role?.type, name: me.role?.name },
+        role: { type: me.role?.type || 'student', name: me.role?.name || 'Student' },
       });
     } catch {
       setUser(null);
@@ -53,13 +53,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (identifier: string, password: string) => {
     const res = await api.post('/api/auth/local', { identifier, password });
     setToken(res.jwt);
-    const me = await api.get('/api/users/me?populate=role');
+    const me = await api.get('/api/custom-auth/me');
     const current: CurrentUser = {
       id: me.id,
       username: me.username,
       email: me.email,
       fullName: me.fullName,
-      role: { type: me.role?.type, name: me.role?.name },
+      role: { type: me.role?.type || 'student', name: me.role?.name || 'Student' },
     };
     setUser(current);
     return current;
