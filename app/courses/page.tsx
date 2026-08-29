@@ -20,6 +20,7 @@ export default function CoursesPage() {
   const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [enrolledIds, setEnrolledIds] = useState<number[]>([]);
+  const [enrolledDocIds, setEnrolledDocIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [enrollingId, setEnrollingId] = useState<number | null>(null);
@@ -43,7 +44,20 @@ export default function CoursesPage() {
 
         if (user?.role.type === 'student') {
           const enrollments = await api.get('/api/enrollments?populate=course');
-          setEnrolledIds((enrollments.data || []).map((e: any) => e.course?.id || e.attributes?.course?.data?.id));
+          const ids: number[] = [];
+          const docIds: string[] = [];
+          (enrollments.data || []).forEach((e: any) => {
+            if (e.course) {
+              if (typeof e.course === 'object') {
+                if (e.course.id) ids.push(e.course.id);
+                if (e.course.documentId) docIds.push(e.course.documentId);
+              } else if (typeof e.course === 'number') {
+                ids.push(e.course);
+              }
+            }
+          });
+          setEnrolledIds(ids);
+          setEnrolledDocIds(docIds);
         }
       } catch (err: any) {
         setError(err.message);
@@ -60,6 +74,7 @@ export default function CoursesPage() {
     try {
       await api.post(`/api/courses/${course.documentId}/enroll`, {});
       setEnrolledIds((ids) => [...ids, course.id]);
+      setEnrolledDocIds((docIds) => [...docIds, course.documentId]);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -104,7 +119,7 @@ export default function CoursesPage() {
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredCourses.map((course) => {
-            const isEnrolled = enrolledIds.includes(course.id);
+            const isEnrolled = enrolledIds.includes(course.id) || enrolledDocIds.includes(course.documentId);
             return (
               <div key={course.id} className="index-card flex flex-col overflow-hidden group">
                 {/* Cover Image */}
