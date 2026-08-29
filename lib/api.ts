@@ -1,4 +1,13 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://lmsbackmain-production.up.railway.app';
+function resolveApiUrl(): string {
+  const envUrl = (process.env.NEXT_PUBLIC_API_URL || '').trim();
+  let base = envUrl.length > 0 ? envUrl : 'https://lmsbackmain-production.up.railway.app';
+  if (!base.startsWith('http://') && !base.startsWith('https://')) {
+    base = `https://${base}`;
+  }
+  return base.replace(/\/+$/, '');
+}
+
+const API_URL = resolveApiUrl();
 
 export class ApiError extends Error {
   status: number;
@@ -37,8 +46,11 @@ async function request(path: string, options: RequestInit = {}) {
   const body = isJson ? await res.json().catch(() => null) : null;
 
   if (!res.ok) {
-    const message =
-      body?.error?.message || body?.message?.[0]?.messages?.[0]?.message || 'Something went wrong.';
+    const rawMessage = body?.error?.message || body?.message?.[0]?.messages?.[0]?.message;
+    let message = rawMessage;
+    if (!message || res.status === 403 || res.status === 401) {
+      message = rawMessage || 'Invalid email/username or password. Please check your login details.';
+    }
     throw new ApiError(message, res.status);
   }
   return body;
