@@ -11,7 +11,8 @@ export default function DashboardRedirect() {
 
   useEffect(() => {
     if (!loading) {
-      router.replace(user ? dashboardPathForRole(user.role.type) : '/login');
+      const roleType = user?.role?.type || (typeof user?.role === 'string' ? user.role : 'student');
+      router.replace(user ? dashboardPathForRole(roleType as any) : '/login');
     }
   }, [loading, user, router]);
 

@@ -11,12 +11,13 @@ import { ProgressBar, Stamp } from '@/components/Stamp';
 import AuthCard from '@/components/AuthCard';
 
 export default function MyCoursesPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user) {
       setLoading(false);
       return;
@@ -51,9 +52,9 @@ export default function MyCoursesPage() {
     };
 
     load();
-  }, [user]);
+  }, [user, authLoading]);
 
-  if (loading) return <Loading />;
+  if (loading || authLoading) return <Loading />;
 
   // Guest State: Render Clean Auth Card inline when not logged in
   if (!user) {
@@ -97,7 +98,7 @@ export default function MyCoursesPage() {
                   {user.fullName || user.username}
                 </h1>
                 <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
-                  {ROLE_LABELS[user.role.type]}
+                  {ROLE_LABELS[(user.role?.type || (typeof user.role === 'string' ? user.role : 'student')) as keyof typeof ROLE_LABELS] || 'Student'}
                 </span>
               </div>
               <p className="text-sm text-gray-400 mt-1">{user.email}</p>

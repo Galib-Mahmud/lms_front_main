@@ -14,6 +14,8 @@ export default function NavBar() {
 
   const isActive = (path: string) => pathname === path || (path !== '/' && pathname?.startsWith(path));
 
+  const roleType = (user?.role?.type || (typeof user?.role === 'string' ? user.role : 'student')) as keyof typeof ROLE_LABELS;
+
   return (
     <header className="border-b border-white/10 bg-black/40 backdrop-blur-xl sticky top-0 z-40 transition-all">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -46,7 +48,7 @@ export default function NavBar() {
             Journal
           </Link>
           <Link
-            href={user ? dashboardPathForRole(user.role.type) : '/my-courses'}
+            href={user ? dashboardPathForRole(roleType as any) : '/my-courses'}
             className={`px-4 py-2 rounded-full transition-all ${isActive('/my-courses') || isActive('/manage/courses')
               ? 'bg-emerald-500/20 text-emerald-400 font-semibold border border-emerald-500/30'
               : 'hover:text-white hover:bg-white/5'
@@ -54,7 +56,7 @@ export default function NavBar() {
           >
             Dashboard
           </Link>
-          {user?.role.type === 'admin' && (
+          {roleType === 'admin' && (
             <Link
               href="/admin"
               className={`px-4 py-2 rounded-full transition-all ${isActive('/admin') ? 'bg-amber-500/20 text-amber-300 font-semibold border border-amber-500/30' : 'hover:text-amber-300 hover:bg-amber-500/10'
@@ -63,7 +65,7 @@ export default function NavBar() {
               Admin Controls
             </Link>
           )}
-          {(user?.role.type === 'admin' || user?.role.type === 'content_manager') && (
+          {(roleType === 'admin' || roleType === 'content_manager') && (
             <Link
               href="/manage/blog"
               className={`px-4 py-2 rounded-full transition-all ${isActive('/manage/blog') ? 'bg-emerald-500/20 text-emerald-400 font-semibold border border-emerald-500/30' : 'hover:text-white hover:bg-white/5'
@@ -81,7 +83,7 @@ export default function NavBar() {
               <div className="flex flex-col text-right leading-none">
                 <span className="text-sm font-semibold text-gray-100">{user.fullName || user.username}</span>
                 <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wide mt-0.5">
-                  {ROLE_LABELS[user.role.type]}
+                  {ROLE_LABELS[roleType] || 'Student'}
                 </span>
               </div>
               <button
@@ -123,15 +125,15 @@ export default function NavBar() {
           <Link href="/blog" className="text-lg font-medium text-gray-200" onClick={() => setOpen(false)}>
             Journal
           </Link>
-          <Link href={user ? dashboardPathForRole(user.role.type) : '/my-courses'} className="text-lg font-medium text-gray-200" onClick={() => setOpen(false)}>
+          <Link href={user ? dashboardPathForRole(roleType as any) : '/my-courses'} className="text-lg font-medium text-gray-200" onClick={() => setOpen(false)}>
             Dashboard
           </Link>
-          {user?.role.type === 'admin' && (
+          {roleType === 'admin' && (
             <Link href="/admin" className="text-lg font-medium text-amber-400" onClick={() => setOpen(false)}>
               Admin Controls
             </Link>
           )}
-          {(user?.role.type === 'admin' || user?.role.type === 'content_manager') && (
+          {(roleType === 'admin' || roleType === 'content_manager') && (
             <Link href="/manage/blog" className="text-lg font-medium text-gray-200" onClick={() => setOpen(false)}>
               Manage Blog
             </Link>
