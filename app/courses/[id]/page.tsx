@@ -48,15 +48,21 @@ export default function CourseDetailPage() {
       const canView = studentEnrolled || isPrivileged || !user;
 
       if (canView) {
-        try {
-          const [lessonsRes, quizzesRes] = await Promise.all([
-            api.get(`/api/lessons?filters[course][id]=${courseNumericId}&sort=order:asc`),
-            api.get(`/api/quizzes?filters[course][id]=${courseNumericId}`),
-          ]);
-          setLessons(lessonsRes.data || []);
-          setQuizzes(quizzesRes.data || []);
-        } catch (err: any) {
-          console.error('Failed to load course lessons/quizzes:', err);
+        const [lessonsResult, quizzesResult] = await Promise.allSettled([
+          api.get(`/api/lessons?filters[course][id]=${courseNumericId}&sort=order:asc`),
+          api.get(`/api/quizzes?filters[course][id]=${courseNumericId}`),
+        ]);
+
+        if (lessonsResult.status === 'fulfilled') {
+          setLessons(lessonsResult.value.data || []);
+        } else {
+          console.error('Failed to load course lessons:', lessonsResult.reason);
+        }
+
+        if (quizzesResult.status === 'fulfilled') {
+          setQuizzes(quizzesResult.value.data || []);
+        } else {
+          console.error('Failed to load course quizzes:', quizzesResult.reason);
         }
       }
     } catch (err: any) {
